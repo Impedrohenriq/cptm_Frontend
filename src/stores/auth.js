@@ -6,6 +6,7 @@ const AUTH_KEY = 'cptm_auth_ok'
 const USER_KEY = 'cptm_user'
 const ONBOARDING_KEY = 'cptm_onboarding_done'
 const TOKEN_KEY = 'cptm_auth_token'
+const LOGOUT_NOTICE_KEY = 'cptm_logout_notice'
 
 function isUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
@@ -79,6 +80,26 @@ export const useAuthStore = defineStore('auth', () => {
     if (token && typeof token === 'string') {
       localStorage.setItem(TOKEN_KEY, token)
     }
+
+    localStorage.removeItem(LOGOUT_NOTICE_KEY)
+  }
+
+  function setLogoutNotice(reason) {
+    if (!reason) return
+    localStorage.setItem(LOGOUT_NOTICE_KEY, String(reason))
+  }
+
+  function consumeLogoutNotice() {
+    const reason = localStorage.getItem(LOGOUT_NOTICE_KEY)
+    if (!reason) return ''
+
+    localStorage.removeItem(LOGOUT_NOTICE_KEY)
+
+    if (reason === 'session_expired_sync') {
+      return 'Sua sessao expirou durante a sincronizacao. Faca login novamente para continuar.'
+    }
+
+    return ''
   }
 
   function mapUser(apiUser) {
@@ -150,9 +171,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  function logout(options = {}) {
     authenticated.value = false
     user.value = null
+
+    if (options.reason) {
+      setLogoutNotice(options.reason)
+    }
+
     localStorage.setItem(AUTH_KEY, 'false')
     localStorage.removeItem(USER_KEY)
     localStorage.removeItem(TOKEN_KEY)
@@ -163,5 +189,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem(ONBOARDING_KEY, 'true')
   }
 
-  return { isAuthenticated, currentUser, isGestor, needsOnboarding, login, register, logout, completeOnboarding }
+  return { isAuthenticated, currentUser, isGestor, needsOnboarding, login, register, logout, completeOnboarding, consumeLogoutNotice }
 })

@@ -39,6 +39,16 @@
         </button>
       </div>
 
+      <!-- Session warning -->
+      <Transition name="fade">
+        <div v-if="avisoSessao" class="login__warning" role="alert">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+          </svg>
+          {{ avisoSessao }}
+        </div>
+      </Transition>
+
       <!-- Error message -->
       <Transition name="fade">
         <div v-if="erro" class="login__error" role="alert">
@@ -232,7 +242,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import LogoBadge from '@/components/LogoBadge.vue'
@@ -242,12 +252,17 @@ const auth    = useAuthStore()
 
 const authMode = ref('login')
 const form = reactive({ fullName: '', email: '', password: '', confirmPassword: '', remember: false })
+const avisoSessao = ref('')
 const erro    = ref('')
 const loading = ref(false)
 const showPassword = ref(false)
 const showForgot = ref(false)
 const forgotEmail = ref('')
 const forgotMsg   = ref(null)
+
+onMounted(() => {
+  avisoSessao.value = auth.consumeLogoutNotice()
+})
 
 function goToUserArea() {
   if (auth.isGestor) {
@@ -520,6 +535,21 @@ async function handleForgot() {
   font-weight: 500;
 }
 .login__error svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.login__warning {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  background: #FFF4E5;
+  border: 1.5px solid #F59E0B;
+  border-radius: var(--r-md);
+  padding: var(--s-md);
+  margin-bottom: var(--s-md);
+  font-size: var(--txt-sm);
+  color: #92400E;
+  font-weight: 600;
+}
+.login__warning svg { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* Footer */
 .login__footer {

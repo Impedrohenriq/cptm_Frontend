@@ -57,6 +57,7 @@ export function isRetryableSyncError(error) {
 export function toSyncErrorMessage(error) {
   if (!error) return 'Falha desconhecida durante a sincronizacao.'
   if (error.isNetworkError) return 'Sem conexao com a API. O item permaneceu na fila local.'
+  if (error.status === 401) return 'Sessao expirada. Faca login novamente para sincronizar.'
   if (error.status === 400) {
     const errors = error.body?.errors && typeof error.body.errors === 'object'
       ? Object.entries(error.body.errors)

@@ -26,6 +26,7 @@ import {
   toSyncErrorMessage,
 } from '@/services/syncEngine.js'
 import { useNotificacoesStore } from '@/stores/notificacoes.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 const LEGACY_INSPECOES_KEY = 'cptm_inspecoes'
 const MIGRATION_META_KEY = 'legacy-inspections-migrated'
@@ -190,6 +191,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
 
   let initPromise = null
   let listenersRegistered = false
+  let healthMonitorIntervalId = null
 
   const total = computed(() => inspecoes.value.length)
   const sincronizadas = computed(() => inspecoes.value.filter((item) => item.syncStatus === SYNC_STATUS.SYNCED).length)
@@ -273,6 +275,28 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
       apiDisponivel.value = false
       return false
     }
+  }
+
+  function iniciarMonitorApi() {
+    if (healthMonitorIntervalId || typeof window === 'undefined') return
+
+    healthMonitorIntervalId = window.setInterval(async () => {
+      if (!initialized.value || syncing.value) return
+
+      if (!navigator.onLine) {
+        browserOnline.value = false
+        apiDisponivel.value = false
+        return
+      }
+
+      browserOnline.value = true
+      const estavaDisponivel = apiDisponivel.value
+      const disponivelAgora = await marcarApiDisponivel()
+
+      if (disponivelAgora && (!estavaDisponivel || filaPendencias.value.length > 0)) {
+        await sincronizarPendentes({ silencioso: true })
+      }
+    }, 10000)
   }
 
   function registrarListeners() {
@@ -363,6 +387,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
       browserOnline.value = navigator.onLine
       await marcarApiDisponivel().catch(() => false)
       registrarListeners()
+      iniciarMonitorApi()
       initialized.value = true
 
       if (browserOnline.value && apiDisponivel.value) {
@@ -594,6 +619,23 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
 
           resultados.push({ localId: syncedRecord.localId, sucesso: true })
         } catch (syncError) {
+          if (syncError?.status === 401) {
+            const auth = useAuthStore()
+            auth.logout({ reason: 'session_expired_sync' })
+            apiDisponivel.value = true
+
+            notificacoes.push({
+              type: 'warning',
+              title: 'Sessao expirada',
+              message: 'Faca login novamente para retomar a sincronizacao.',
+              dedupeKey: 'session-expired-sync',
+            })
+
+            if (typeof window !== 'undefined' && window.location.hash !== '#/login') {
+              window.location.hash = '#/login'
+            }
+          }
+
           const failedRecord = criarRegistroBase(record.payload, {
             syncStatus: SYNC_STATUS.ERROR,
             pendingOperation: record.pendingOperation,
@@ -710,7 +752,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
       await reconciliarLocalComServidor(itensServidor)
     } catch (error) {
       erro.value = error.message
-      apiDisponivel.value = false
+      apiDisponivel.value = error?.status === 401
     } finally {
       loading.value = false
     }
