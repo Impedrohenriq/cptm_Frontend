@@ -130,7 +130,7 @@
         <div class="fdc-wrap">
           <input id="latitude" class="fdc-input" type="number" step="any"
             :value="v.latitude"
-            placeholder="-23.1234"
+            placeholder="Ex: -23.020506"
             @input="u('latitude', $event.target.value)" />
           <button v-if="v.latitude" class="fdc-clear" type="button"
             @click="u('latitude', null)" aria-label="Limpar">×</button>
@@ -141,10 +141,35 @@
         <div class="fdc-wrap">
           <input id="longitude" class="fdc-input" type="number" step="any"
             :value="v.longitude"
-            placeholder="-46.1234"
+            placeholder="Ex: -46.010203"
             @input="u('longitude', $event.target.value)" />
           <button v-if="v.longitude" class="fdc-clear" type="button"
             @click="u('longitude', null)" aria-label="Limpar">×</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="fdc-row">
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="latitudeSirgas2000">Latitude (m) - SIRGAS2000</label>
+        <div class="fdc-wrap">
+          <input id="latitudeSirgas2000" class="fdc-input" type="number" step="0.001"
+            :value="v.latitudeSirgas2000"
+            placeholder="Ex: 325.421"
+            @input="u('latitudeSirgas2000', $event.target.value)" />
+          <button v-if="v.latitudeSirgas2000" class="fdc-clear" type="button"
+            @click="u('latitudeSirgas2000', null)" aria-label="Limpar">×</button>
+        </div>
+      </div>
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="longitudeSirgas2000">Longitude (m) - SIRGAS2000</label>
+        <div class="fdc-wrap">
+          <input id="longitudeSirgas2000" class="fdc-input" type="number" step="0.001"
+            :value="v.longitudeSirgas2000"
+            placeholder="Ex: 7456589.000"
+            @input="u('longitudeSirgas2000', $event.target.value)" />
+          <button v-if="v.longitudeSirgas2000" class="fdc-clear" type="button"
+            @click="u('longitudeSirgas2000', null)" aria-label="Limpar">×</button>
         </div>
       </div>
     </div>
@@ -170,26 +195,27 @@ const gpsLoading = ref(false)
 
 const MUNICIPIOS = [
   'São Paulo','Guarulhos','Mogi das Cruzes','Suzano','Poá','Ferraz de Vasconcelos',
-  'Ribeirão Pires','Rio Grande da Serra','Santo André','Osasco','Carapicuíba',
+  'Ribeirão Pires','Rio Grande da Serra','Santo André','Osasco','Carapicuíba','Barueri',
   'Jandira','Itapevi','Campo Limpo Paulista','Várzea Paulista','Jundiaí',
-  'Franco da Rocha','Francisco Morato','Caieiras',
+  'Franco da Rocha','Francisco Morato','Caieiras','Itaquaquecetuba',
 ]
 const LINHAS = [
   'Linha 07 - Rubi','Linha 08 - Diamante','Linha 09 - Esmeralda',
-  'Linha 10 - Turquesa','Linha 11 - Coral','Linha 12 - Safira','Linha 13 - Jade',
+  'Linha 10 - Turquesa','Linha 11 - Coral','Linha 12 - Safira','Linha 13 - Jade','Sem linha associada','Linha não informada',
 ]
 const ESTACOES = [
   'Estação Luz','Estação Brás','Estação Tatuapé','Estação Palmeiras-Barra Funda',
   'Estação Júlio Prestes','Estação Osasco','Estação Jundiaí','Estação Campo Limpo Paulista',
   'Estação Franco da Rocha','Estação Francisco Morato','Estação Várzea Paulista',
   'Estação Mogi das Cruzes','Estação Suzano','Estação Poá','Estação Ferraz de Vasconcelos',
-  'Estação Ribeirão Pires','Estação Rio Grande da Serra','Estação Grajaú',
+  'Estação Ribeirão Pires','Estação Rio Grande da Serra','Estação Grajaú','Estação Água Branca',
   'Estação Santo André','Estação Jardim Helena - Vila Mara',
 ]
 const VIAS = [
-  'Via 01 - Par','Via 02 - Ímpar',
-  'Via 03E - Trecho 1','Via 03E - Trecho 2',
-  'Via 03D - Trecho 1','Via 03D - Trecho 2','Via Única',
+  'Via 01','Via 02','Via 03','Via 04','Via 05','Via 06','Via 08','Via 09','Via 10',
+  'Via 01S - Trecho 1','Via 01S - Trecho 2','Via 02S - Trecho 1','Via 02S - Trecho 2',
+  'Via 03E - Trecho 2','Via 04E - Trecho 2','Via Auxiliar','Via Variante','Travessão - AMV',
+  'Não se aplica(m)','Inexistente(s)','Indefinido(a)(s)','Não avaliado(a)(s)',
 ]
 
 function u(field, val) {

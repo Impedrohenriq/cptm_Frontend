@@ -82,6 +82,18 @@
       </div>
     </div>
 
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="analiseCptmAprovacao">Análise CPTM para Aprovação</label>
+      <div class="fdc-wrap">
+        <input id="analiseCptmAprovacao" class="fdc-input" type="text"
+          :value="v.analiseCptmAprovacao"
+          placeholder="Ex: Aprovado com condicionantes"
+          @input="u('analiseCptmAprovacao', $event.target.value)" />
+        <button v-if="v.analiseCptmAprovacao" class="fdc-clear" type="button"
+          @click="u('analiseCptmAprovacao', '')" aria-label="Limpar">×</button>
+      </div>
+    </div>
+
     <!-- SEÇÃO 7.2 -->
     <div class="fdc-sec">
       <div class="fdc-sec__badge">7.2</div>
@@ -227,19 +239,133 @@
       </div>
     </div>
 
+    <div class="fdc-row">
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="ofereceRiscoSistemaCptm">Oferece risco aos Sistemas da CPTM?</label>
+        <div class="fdc-wrap fdc-wrap--sel">
+          <select id="ofereceRiscoSistemaCptm" class="fdc-input"
+            :value="v.ofereceRiscoSistemaCptm" @change="u('ofereceRiscoSistemaCptm', $event.target.value)">
+            <option value="">— Deixar em branco</option>
+            <option v-for="s in GEA_SIM_NAO" :key="s" :value="s">{{ s }}</option>
+          </select>
+          <svg class="fdc-chevron" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+      </div>
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="dominioTerritorial">Domínio Territorial</label>
+        <div class="fdc-wrap fdc-wrap--sel">
+          <select id="dominioTerritorial" class="fdc-input"
+            :value="v.dominioTerritorial" @change="u('dominioTerritorial', $event.target.value)">
+            <option value="">— Deixar em branco</option>
+            <option v-for="d in DOMINIO_TERRITORIAL" :key="d" :value="d">{{ d }}</option>
+          </select>
+          <svg class="fdc-chevron" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="fdc-sec">
+      <div class="fdc-sec__badge">8</div>
+      <div>
+        <h2 class="fdc-sec__title">Arquivos Relacionados e Rastreabilidade</h2>
+        <p class="fdc-sec__desc">Vínculos com RVT, DAC, CNC, RRA e CEDOC (quando aplicável).</p>
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="nomeArquivoRvtRelacionado">Nome do arquivo RVT relacionado</label>
+      <div class="fdc-wrap">
+        <input id="nomeArquivoRvtRelacionado" class="fdc-input" type="text"
+          :value="v.nomeArquivoRvtRelacionado"
+          placeholder="Ex: DeaeCt123123123123A2024Rvt002L07.xlsx"
+          @input="u('nomeArquivoRvtRelacionado', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="codigoElementoMonitorRvt">Código do E.M. no RVT relacionado</label>
+      <div class="fdc-wrap">
+        <input id="codigoElementoMonitorRvt" class="fdc-input" type="text"
+          :value="v.codigoElementoMonitorRvt"
+          placeholder="Ex: GEA.DEAE-EM.0001-RVT.002/2024-L.07-CT.123..."
+          @input="u('codigoElementoMonitorRvt', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="nomeArquivoDacRelacionado">Nome do arquivo DAC relacionado</label>
+      <div class="fdc-wrap">
+        <input id="nomeArquivoDacRelacionado" class="fdc-input" type="text"
+          :value="v.nomeArquivoDacRelacionado"
+          placeholder="Ex: DeaeCt123123123123A2024Dac002L07.xlsx"
+          @input="u('nomeArquivoDacRelacionado', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="codigoElementoMonitorDac">Código do E.M. na DAC relacionada</label>
+      <div class="fdc-wrap">
+        <input id="codigoElementoMonitorDac" class="fdc-input" type="text"
+          :value="v.codigoElementoMonitorDac"
+          placeholder="Ex: GEA.DEAE-EM.0001-DAC.002/2024-L.07-CT.123..."
+          @input="u('codigoElementoMonitorDac', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="nomeArquivoCncRelacionado">Nome do arquivo CNC relacionado</label>
+      <div class="fdc-wrap">
+        <input id="nomeArquivoCncRelacionado" class="fdc-input" type="text"
+          :value="v.nomeArquivoCncRelacionado"
+          placeholder="Ex: DeaeCt123123123123A2024Cnc002L07.xlsx"
+          @input="u('nomeArquivoCncRelacionado', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-field">
+      <label class="fdc-lbl" for="codigoElementoMonitorCnc">Código do E.M. na CNC relacionada</label>
+      <div class="fdc-wrap">
+        <input id="codigoElementoMonitorCnc" class="fdc-input" type="text"
+          :value="v.codigoElementoMonitorCnc"
+          placeholder="Ex: GEA.DEAE-EM.0001-CNC.002/2024-L.07-CT.123..."
+          @input="u('codigoElementoMonitorCnc', $event.target.value)" />
+      </div>
+    </div>
+
+    <div class="fdc-row">
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="codigoUltimoRra">Chave Primária no último RRA</label>
+        <div class="fdc-wrap">
+          <input id="codigoUltimoRra" class="fdc-input" type="text"
+            :value="v.codigoUltimoRra"
+            placeholder="Ex: EEA.EF-A.2024-L.07-CPTM-N.123456"
+            @input="u('codigoUltimoRra', $event.target.value)" />
+        </div>
+      </div>
+      <div class="fdc-field">
+        <label class="fdc-lbl" for="codigoCedoc">Chave Primária - CEDOC</label>
+        <div class="fdc-wrap">
+          <input id="codigoCedoc" class="fdc-input" type="text"
+            :value="v.codigoCedoc"
+            placeholder="Ex: FDC-FA.FA.OC-A.2024-CPTM-L.07-N.123456"
+            @input="u('codigoCedoc', $event.target.value)" />
+        </div>
+      </div>
+    </div>
+
     <div class="fdc-field">
       <label class="fdc-lbl" for="observacoesGerais">Observações Gerais do Cadastramento</label>
-      <div class="fdc-hint">Observações relevantes ao cadastramento. Máximo 255 caracteres.</div>
+      <div class="fdc-hint">Observações relevantes ao cadastramento. Máximo 2000 caracteres.</div>
       <textarea id="observacoesGerais" class="fdc-textarea"
-        rows="4" maxlength="255"
+        rows="4" maxlength="2000"
         :value="v.observacoesGerais"
-        placeholder="Descreva informações relevantes sobre o cadastramento/caracterização..."
+        placeholder="Ex: Coleta realizada em área operacional sem interferência na via. DRA vigente e comprovação anexada."
         @input="u('observacoesGerais', $event.target.value)"></textarea>
       <div class="fdc-textarea-foot">
         <button v-if="v.observacoesGerais" class="fdc-txt-clear" type="button"
           @click="u('observacoesGerais', '')">Limpar texto</button>
         <span v-else></span>
-        <span class="fdc-chars">{{ (v.observacoesGerais || '').length }}/255</span>
+        <span class="fdc-chars">{{ (v.observacoesGerais || '').length }}/2000</span>
       </div>
     </div>
 
@@ -253,38 +379,45 @@ const emit  = defineEmits(['update:modelValue'])
 const v = props.modelValue
 
 const TIPOS_ATIVIDADE = [
-  'Transporte Ferroviário','Obras e Construção Civil','Manutenção de Instalações',
-  'Lavagem de Veículos','Armazenamento de Produtos Químicos','Serviços de Limpeza',
-  'Outro(a)(s)',
+  'Estação de Tratamento de Efluente','Transporte','Outro(a)(s)','Indefinido(a)(s)',
+  'Não se aplica(m)','Inexistente(s)','Não avaliado(a)(s)',
 ]
 const TIPOS_DRA = [
-  'Licença de Operação - LO','Licença de Instalação - LI','Licença Prévia - LP',
-  'Autorização Ambiental','Dispensa de Licença','Cadastro Técnico Federal - CTF',
+  'Cadastro Técnico Federal (IBAMA) - CTF/IBAMA',
+  'Certificado de Dispensa de Licença - CDL',
+  'Certificado de Movimentação de Resíduos de Interesse Ambiental - CADRI',
+  'Declaração de Movimentação de Resíduos - DMR',
+  'Ficha de Informações de Segurança de Produtos Químicos - FISPQ',
+  'Licença de Operação - LO',
+  'Manifesto de Transporte de Resíduos - MTR',
   'Outro(a)(s)',
+  'Não se aplica(m)','Indefinido(a)(s)','Inexistente(s)','Não avaliado(a)(s)',
 ]
 const TIPOS_ATIVIDADE_CPTM = [
-  'Operação Ferroviária','Empreendimento/Obra','Manutenção','Conservação de Via',
-  'Pátio e Garagem','Serviços Gerais',
+  'Empreendimento/Obra','Manutenção','Operação','Outro(a)(s)','Não se aplica(m)','Indefinido(a)(s)','Inexistente(s)',
 ]
 const NOMES_LOCAL = [
-  'Estação','Pátio','Via Permanente','Túnel','Viaduto',
-  'Edificação Administrativa','Oficina','Depósito',
+  'Abrigo','Base de manutenção','Cabine Primária','Cabine Seccionadora','Estação',
+  'Lavador de TUE','Oficina','Pátio','Prédio administrativo','Prédio de apoio','Sala técnica','Subestação','Trecho - Km/poste','Vários',
 ]
 const ORIGENS_EFLUENTE = [
-  'Doméstico','Industrial','Pluvial',
-  'Misto (Doméstico + Industrial)','Misto (Doméstico + Pluvial)','Outro(a)(s)',
+  'Doméstico/Sanitário','Fundação','Industrial','Outro(a)(s)','Indefinido(a)(s)','Inexistente(s)','Não se aplica(m)','Não avaliado(a)(s)',
 ]
 const FONTES_GERADORAS = [
-  'Banheiro químico','Fossa séptica','Sumidouro','Tanque de decantação',
-  'Efluente de lavagem','Escoamento superficial','Drenagem de obra','Outro(a)(s)',
+  'Atividade de obra','Banheiros/vestiários/refeitórios','Lavagem de trens/peças','Manutenção ETE','Outro(a)(s)','Indefinido(a)(s)','Inexistente(s)','Não se aplica(m)','Não avaliado(a)(s)',
 ]
 const TIPOS_DESTINACAO = [
-  'Interligação em rede coletora','Coleta e transporte por caminhão',
-  'Tratamento in loco','Disposição no solo','Outro(a)(s)',
+  'Esgotamento e transporte','Interligação em rede coletora','Lançamento em galeria de águas pluviais','Reinfiltração','Tratamento em ETE','Outro(a)(s)','Indefinido(a)(s)','Não se aplica(m)',
 ]
 const TIPOS_VEICULO = [
-  'Caminhão','Caminhão-tanque','Caminhão limpa-fossa',
-  'Veículo utilitário','Não se aplica',
+  'Caminhão','Outro(a)(s)','Indefinido(a)(s)','Não se aplica(m)','Inexistente(s)',
+]
+const GEA_SIM_NAO = ['Sim', 'Não', 'Não Informado', 'Não se aplica(m)', 'Inexistente(s)', 'Indefinido(a)(s)', 'Não avaliado(a)(s)']
+const DOMINIO_TERRITORIAL = [
+  'CPTM - Titularidade', 'CPTM - Posse', 'Metrô', 'Alienado', 'MRS', 'RFSA', 'RFSA/SPU',
+  'CBTU', 'Pessoa Jurídica', 'Pessoa Física', 'Indefinido', 'FEPASA', 'Permuta',
+  'Prefeitura de Guarulhos', 'DAEE', 'USP Leste', 'GRU - Aeroporto', 'CCR - Rodovia Dutra',
+  'Ecopistas', 'CDHU', 'Não se aplica(m)', 'Inexistente(s)', 'Indefinido(a)(s)', 'Não avaliado(a)(s)'
 ]
 
 function u(field, val) {
