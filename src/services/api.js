@@ -1,6 +1,7 @@
 import { blobToBase64 } from '@/services/offlineMedia.js'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:5001'
+const IS_NGROK_TUNNEL = /ngrok(-free)?\./i.test(BASE)
 const ENDPOINT = `${BASE}/api/formularios-efluente`
 const HEALTH_ENDPOINT = `${BASE}/health`
 const AUTH_ENDPOINT = `${BASE}/api/auth`
@@ -11,7 +12,10 @@ function getAuthToken() {
 }
 
 function headers({ auth = true } = {}) {
-  const base = { 'Content-Type': 'application/json' }
+  const base = {
+    'Content-Type': 'application/json',
+    ...(IS_NGROK_TUNNEL ? { 'ngrok-skip-browser-warning': '1' } : {}),
+  }
 
   if (!auth) {
     return base
@@ -341,7 +345,10 @@ export function doDto(dto) {
 
 export async function healthCheck() {
   try {
-    const response = await fetch(HEALTH_ENDPOINT, { cache: 'no-store' })
+    const response = await fetch(HEALTH_ENDPOINT, {
+      cache: 'no-store',
+      headers: headers({ auth: false }),
+    })
 
     if (!response.ok) {
       throw buildApiError({
