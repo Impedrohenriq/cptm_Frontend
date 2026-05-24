@@ -180,6 +180,7 @@ async function hydrateServerPayload(serverItem) {
 
 export const useInspecoesStore = defineStore('inspecoes', () => {
   const notificacoes = useNotificacoesStore()
+  const auth = useAuthStore()
   const inspecoes = ref([])
   const loading = ref(false)
   const erro = ref(null)
@@ -463,7 +464,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
         sucesso: false,
         queued: true,
         local: registro,
-        mensagem: 'API indisponivel. O item ficou pendente de sincronizacao.',
+        mensagem: 'API indisponível. O item ficou pendente de sincronização.',
       }
     }
 
@@ -513,7 +514,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
     await initialize()
 
     if (syncing.value && !localId) {
-      return { sucesso: false, mensagem: 'Sincronizacao ja em andamento.' }
+      return { sucesso: false, mensagem: 'Sincronização já em andamento.' }
     }
 
     if (!navigator.onLine) {
@@ -522,7 +523,7 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
     }
 
     if (!await marcarApiDisponivel()) {
-      return { sucesso: false, mensagem: 'API indisponivel no momento.' }
+      return { sucesso: false, mensagem: 'API indisponível no momento.' }
     }
 
     syncing.value = true
@@ -626,8 +627,8 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
 
             notificacoes.push({
               type: 'warning',
-              title: 'Sessao expirada',
-              message: 'Faca login novamente para retomar a sincronizacao.',
+              title: 'Sessão expirada',
+              message: 'Faça login novamente para retomar a sincronização.',
               dedupeKey: 'session-expired-sync',
             })
 
@@ -764,6 +765,22 @@ export const useInspecoesStore = defineStore('inspecoes', () => {
 
     const item = inspecoes.value.find((inspecao) => inspecao.localId === localId)
     if (!item) return
+
+    const user = auth.currentUser?.value ?? auth.currentUser
+    const isGestor = auth.isGestor?.value ?? auth.isGestor
+
+    if (!isGestor) {
+      const userId = normalizeText(user?.id)
+      const userNome = normalizeText(user?.name)
+      const itemId = normalizeText(item.funcionarioId)
+      const itemNome = normalizeText(item.funcionarioNome || item.autorCadastro || item.autorFormulario)
+      const isOwnerById = Boolean(userId && itemId && userId === itemId)
+      const isOwnerByName = Boolean(userNome && itemNome && userNome === itemNome)
+
+      if (!isOwnerById && !isOwnerByName) {
+        throw new Error('Voce so pode excluir inspecoes criadas por voce.')
+      }
+    }
 
     if (item.serverConfirmed && item.chavePrimariaMa && navigator.onLine && await marcarApiDisponivel()) {
       await api.excluir(item.chavePrimariaMa)

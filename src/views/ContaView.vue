@@ -3,13 +3,13 @@
     <header class="conta__header">
       <p class="conta__eyebrow">AREA DA CONTA</p>
       <h1 class="conta__title">Minha Conta</h1>
-      <p class="conta__subtitle">Gerencie suas informacoes de acesso e configuracoes do aplicativo.</p>
+      <p class="conta__subtitle">Gerencie suas informações de acesso e configurações do aplicativo.</p>
     </header>
 
-    <section class="conta__card conta__card--profile" aria-label="Perfil do usuario">
+    <section class="conta__card conta__card--profile" aria-label="Perfil do usuário">
       <div class="conta__avatar">{{ user?.initials || 'US' }}</div>
       <div class="conta__profile-text">
-        <h2>{{ user?.name || 'Usuario' }}</h2>
+        <h2>{{ user?.name || 'Usuário' }}</h2>
         <p>{{ user?.email || 'sem-email' }}</p>
         <span class="conta__role">{{ user?.role || 'Colaborador' }}</span>
       </div>
@@ -19,26 +19,26 @@
       <h3>Resumo de atividade</h3>
       <div class="conta__stats">
         <div class="stat-box">
-          <strong>{{ store.total }}</strong>
-          <span>Inspecoes</span>
+          <strong>{{ userTotal }}</strong>
+          <span>Inspeções</span>
         </div>
         <div class="stat-box">
-          <strong>{{ store.sincronizadas }}</strong>
+          <strong>{{ userSincronizadas }}</strong>
           <span>Sincronizadas</span>
         </div>
         <div class="stat-box">
-          <strong>{{ store.pendentesSync }}</strong>
+          <strong>{{ userPendentes }}</strong>
           <span>Pendentes</span>
         </div>
       </div>
     </section>
 
-    <section class="conta__card" aria-label="Preferencias e suporte">
-      <h3>Preferencias e suporte</h3>
+    <section class="conta__card" aria-label="Preferências e suporte">
+      <h3>Preferências e suporte</h3>
       <ul class="conta__list">
         <li>
-          <span>Notificacoes da fila local</span>
-          <strong>{{ store.pendentesSync > 0 ? 'Ativas' : 'Normais' }}</strong>
+          <span>Notificações da fila local</span>
+          <strong>{{ userPendentes > 0 ? 'Ativas' : 'Normais' }}</strong>
         </li>
         <li>
           <span>Status da conectividade</span>
@@ -51,9 +51,9 @@
       </ul>
     </section>
 
-    <section class="conta__card" aria-label="Seguranca">
-      <h3>Seguranca</h3>
-      <p class="conta__text">Sua autenticacao e validada com credencial no banco, e a senha e armazenada com hash seguro.</p>
+    <section class="conta__card" aria-label="Segurança">
+      <h3>Segurança</h3>
+      <p class="conta__text">Sua autenticação é validada com credencial no banco, e a senha é armazenada com hash seguro.</p>
       <button class="conta__logout" @click="handleLogout">Sair da conta</button>
     </section>
   </main>
@@ -69,7 +69,18 @@ const router = useRouter()
 const auth = useAuthStore()
 const store = useInspecoesStore()
 
-const user = computed(() => auth.currentUser)
+const user = computed(() => auth.currentUser?.value ?? auth.currentUser)
+const userRecords = computed(() => {
+  const funcionarioId = user.value?.id
+  const funcionarioNome = user.value?.name
+
+  if (!funcionarioId) return []
+  return store.porFuncionario(funcionarioId, funcionarioNome)
+})
+
+const userTotal = computed(() => userRecords.value.length)
+const userSincronizadas = computed(() => userRecords.value.filter((item) => item.syncStatus === 'sincronizado').length)
+const userPendentes = computed(() => userRecords.value.filter((item) => ['pendente_sync', 'erro_sync', 'sincronizando'].includes(item.syncStatus)).length)
 
 onMounted(async () => {
   await store.initialize()

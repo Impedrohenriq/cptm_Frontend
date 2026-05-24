@@ -97,7 +97,7 @@
               inputmode="email"
               autocomplete="email"
               class="campo-input campo-input--icone"
-              placeholder="usuario@empresa.com"
+              placeholder="usuario@empresa.com.br"
               required
               aria-required="true"
               :aria-invalid="erro ? 'true' : undefined"

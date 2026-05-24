@@ -106,6 +106,22 @@
       </Transition>
     </Teleport>
 
+    <!-- Modal de bloqueio por rascunho pendente -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="draftLockModal.show" class="fv-modal-overlay" role="dialog" aria-modal="true">
+          <div class="fv-modal-card">
+            <div class="fv-modal-icon fv-modal-icon--warning">
+              <svg viewBox="0 0 24 24" fill="white" width="34" height="34"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+            </div>
+            <h2 class="fv-modal-title">Nova inspeção bloqueada</h2>
+            <p class="fv-modal-desc">Você já possui um rascunho pendente. Envie ou exclua esse rascunho para abrir uma nova inspeção.</p>
+            <button class="fv-btn-ok fv-btn-ok--warning" @click="fecharAvisoRascunhoPendente">Entendi</button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -141,6 +157,8 @@ const currentLocalId = ref(null)
 const carregandoFormulario = ref(true)
 const pausandoAutoSave = ref(false)
 const modalState = reactive({ show: false, title: '', desc: '' })
+const draftLockModal = reactive({ show: false })
+const draftLockNoticeShown = ref(false)
 
 const progressPct = computed(() => (etapaAtual.value / (totalEtapas - 1)) * 100)
 
@@ -256,10 +274,45 @@ async function aplicarDadosSemAutoSave(item) {
   pausandoAutoSave.value = false
 }
 
+function obterRascunhoPendenteDoUsuario() {
+  const usuario = usuarioAtual.value
+  const funcionarioId = usuario?.id
+  const funcionarioNome = usuario?.name
+
+  if (!funcionarioId) {
+    return null
+  }
+
+  const meusRegistros = store.porFuncionario(funcionarioId, funcionarioNome)
+  return meusRegistros.find((item) => item.syncStatus === 'rascunho') || null
+}
+
+function mostrarAvisoRascunhoPendente() {
+  if (draftLockNoticeShown.value) return
+
+  draftLockNoticeShown.value = true
+  draftLockModal.show = true
+}
+
+function fecharAvisoRascunhoPendente() {
+  draftLockModal.show = false
+}
+
 async function carregarFormularioDaRota() {
   const localId = typeof route.query.localId === 'string' ? route.query.localId : null
 
   if (!localId) {
+    const rascunhoPendente = obterRascunhoPendenteDoUsuario()
+    if (rascunhoPendente) {
+      currentLocalId.value = rascunhoPendente.localId
+      await aplicarDadosSemAutoSave(rascunhoPendente)
+      await router.replace({ path: '/formulario', query: { localId: rascunhoPendente.localId } })
+      mostrarAvisoRascunhoPendente()
+      return true
+    }
+
+    currentLocalId.value = null
+    await aplicarDadosSemAutoSave(criarDadosIniciais())
     return false
   }
 
@@ -291,7 +344,8 @@ watch(usuarioAtual, () => {
 watch(
   () => route.query.localId,
   async (newLocalId, oldLocalId) => {
-    if (!newLocalId || newLocalId === oldLocalId || carregandoFormulario.value) return
+    if (newLocalId === oldLocalId || carregandoFormulario.value) return
+
     await carregarFormularioDaRota()
     aplicarPrefillUsuarioLogado()
   }
@@ -315,11 +369,11 @@ async function enviarInspecao()  {
   }
 
   if (resultado.sucesso) {
-    modalState.title = 'Inspecao sincronizada'
-    modalState.desc = 'A API confirmou o recebimento e o item ja foi persistido no backend e no Oracle.'
+    modalState.title = 'Inspeção sincronizada'
+    modalState.desc = 'A API confirmou o recebimento e o item já foi persistido no backend e no Oracle.'
   } else {
-    modalState.title = 'Inspecao na fila local'
-    modalState.desc = resultado.mensagem ?? 'Os dados ficaram salvos no dispositivo e serao reenviados automaticamente quando a conectividade voltar.'
+    modalState.title = 'Inspeção na fila local'
+    modalState.desc = resultado.mensagem ?? 'Os dados ficaram salvos no dispositivo e serão reenviados automaticamente quando a conectividade voltar.'
   }
 
   modalState.show = true
@@ -548,6 +602,10 @@ function voltarAoDashboard() {
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 8px 24px rgba(46,125,50,.35);
 }
+.fv-modal-icon--warning {
+  background: var(--cptm-vermelho);
+  box-shadow: 0 8px 24px rgba(200,16,46,.35);
+}
 .fv-modal-title { font-size: var(--txt-xl); font-weight: 800; color: var(--cptm-cinza-escuro); margin: 0; }
 .fv-modal-desc  { font-size: var(--txt-sm); color: var(--cptm-cinza-medio); line-height: 1.6; margin: 0; max-width: 280px; }
 .fv-btn-ok {
@@ -559,6 +617,11 @@ function voltarAoDashboard() {
   transition: background var(--t-fast);
 }
 .fv-btn-ok:hover { background: var(--verde-hover); }
+.fv-btn-ok--warning {
+  background: var(--cptm-vermelho);
+  box-shadow: 0 4px 12px rgba(200,16,46,.35);
+}
+.fv-btn-ok--warning:hover { background: var(--cptm-vermelho-escuro); }
 
 /* ====================================================
    TRANSIÇÕES DE ETAPA

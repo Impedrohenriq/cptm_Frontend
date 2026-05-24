@@ -55,9 +55,9 @@ export function isRetryableSyncError(error) {
 }
 
 export function toSyncErrorMessage(error) {
-  if (!error) return 'Falha desconhecida durante a sincronizacao.'
-  if (error.isNetworkError) return 'Sem conexao com a API. O item permaneceu na fila local.'
-  if (error.status === 401) return 'Sessao expirada. Faca login novamente para sincronizar.'
+  if (!error) return 'Falha desconhecida durante a sincronização.'
+  if (error.isNetworkError) return 'Sem conexão com a API. O item permaneceu na fila local.'
+  if (error.status === 401) return 'Sessão expirada. Faça login novamente para sincronizar.'
   if (error.status === 400) {
     const errors = error.body?.errors && typeof error.body.errors === 'object'
       ? Object.entries(error.body.errors)
@@ -76,7 +76,7 @@ export function toSyncErrorMessage(error) {
 
     return error.body?.message || error.body?.title || 'A API rejeitou o payload. Revise os dados antes de tentar novamente.'
   }
-  if (error.status === 404) return 'O registro nao foi encontrado no servidor durante a atualizacao.'
+  if (error.status === 404) return 'O registro não foi encontrado no servidor durante a atualização.'
   if (error.status === 409) return 'Conflito detectado ao sincronizar o registro.'
   if (error.status >= 500) return 'A API respondeu com erro interno. O item permaneceu na fila local.'
   return error.message ?? 'Falha ao sincronizar o registro.'

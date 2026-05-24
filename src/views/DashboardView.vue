@@ -17,7 +17,7 @@
           >
             <button
               class="btn-circle btn-circle--ghost"
-              :aria-label="`Notificacoes (${naoLidasCount} novas)`"
+              :aria-label="`Notificações (${naoLidasCount} novas)`"
               style="position:relative"
               @click="toggleNotifications"
             >
@@ -32,15 +32,15 @@
                 v-if="notifOpen"
                 class="notif-popover"
                 role="dialog"
-                aria-label="Notificacoes recentes"
+                aria-label="Notificações recentes"
               >
                 <div class="notif-popover__head">
-                  <strong>Notificacoes</strong>
+                  <strong>Notificações</strong>
                   <button class="notif-popover__clear" @click="limparNotificacoes">Limpar</button>
                 </div>
 
                 <div v-if="notificacoesOrdenadas.length === 0" class="notif-popover__empty">
-                  Nenhuma notificacao no momento.
+                  Nenhuma notificação no momento.
                 </div>
 
                 <ul v-else class="notif-list" role="list">
@@ -67,7 +67,7 @@
           >
             <button
               class="btn-circle btn-circle--ghost"
-              aria-label="Perfil do usuario"
+              aria-label="Perfil do usuário"
               @click="toggleProfile"
             >
               <span class="avatar-initials" aria-hidden="true">{{ initials }}</span>
@@ -78,19 +78,19 @@
                 v-if="profileOpen"
                 class="profile-popover"
                 role="dialog"
-                aria-label="Dados do usuario"
+                aria-label="Dados do usuário"
               >
                 <div class="profile-popover__head">
                   <div>
-                    <p class="profile-popover__name">{{ user?.name || 'Usuario' }}</p>
-                    <p class="profile-popover__role">{{ user?.role || 'Cargo nao definido' }}</p>
+                    <p class="profile-popover__name">{{ user?.name || 'Usuário' }}</p>
+                    <p class="profile-popover__role">{{ user?.role || 'Cargo não definido' }}</p>
                   </div>
                   <span class="profile-popover__initials" aria-hidden="true">{{ initials }}</span>
                 </div>
 
                 <div class="profile-popover__contact">
                   <p class="profile-popover__label">Contato</p>
-                  <p class="profile-popover__email">{{ user?.email || 'E-mail nao informado' }}</p>
+                  <p class="profile-popover__email">{{ user?.email || 'E-mail não informado' }}</p>
                 </div>
 
                 <button class="profile-popover__logout" @click="logoutUser">
@@ -134,7 +134,7 @@
       <div class="dashboard__sync-panel">
         <div>
           <p class="dashboard__sync-title">Fila local</p>
-          <p class="dashboard__sync-sub">{{ pendentesSync }} item(ns) aguardando sincronizacao com a API.</p>
+          <p class="dashboard__sync-sub">{{ pendentesSync }} item(ns) aguardando sincronização com a API.</p>
         </div>
         <button class="dashboard__sync-btn" :disabled="pendentesSync === 0 || !store.browserOnline" @click="sincronizarAgora">
           Sincronizar agora
@@ -195,7 +195,7 @@
                   {{ ownerInitials(ins) }}
                 </span>
               </div>
-              <p class="card-ins__author">{{ ins.funcionarioNome || ins.autorCadastro || user?.name || 'Usuario' }}</p>
+              <p class="card-ins__author">{{ ins.funcionarioNome || ins.autorCadastro || user?.name || 'Usuário' }}</p>
               <p class="card-ins__local">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                 {{ ins.estacao || ins.nomeLocal || '—' }} · {{ ins.linha || '—' }}
@@ -227,6 +227,122 @@
       </section>
     </div><!-- /content -->
 
+    <Teleport to="body">
+      <Transition name="slide-up">
+        <div
+          v-if="inspecaoSelecionada"
+          class="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          @click.self="fecharResumo"
+        >
+          <div class="modal-sheet">
+            <div class="modal-handle" aria-hidden="true"></div>
+
+            <div class="modal-head">
+              <div>
+                <h3 class="modal-head__title">Resumo da Inspeção</h3>
+                <div class="modal-head__sub">
+                  <StatusBadge :status="inspecaoSelecionada.status" />
+                  <span class="func-pill" :class="avatarClass(inspecaoSelecionada.funcionarioId)">
+                    {{ ownerInitials(inspecaoSelecionada) }}
+                  </span>
+                </div>
+              </div>
+              <button class="btn-fechar" @click="fecharResumo" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <div class="resumo-card">
+                <div class="resumo-linha--destaque">
+                  <div class="resumo-icone icone-efluente" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z"/></svg>
+                  </div>
+                  <div>
+                    <strong>{{ inspecaoSelecionada.nomeContratada || 'FDC-EEA.EF' }}</strong>
+                    <div class="resumo-item__label">{{ inspecaoSelecionada.estacao || inspecaoSelecionada.nomeLocal || 'Local não informado' }}</div>
+                  </div>
+                </div>
+
+                <div class="resumo-divisor"></div>
+                <div class="resumo-grupo">
+                  <div class="resumo-item">
+                    <span class="resumo-item__label">Linha</span>
+                    <span class="resumo-item__valor">{{ inspecaoSelecionada.linha || '—' }}</span>
+                  </div>
+                  <div class="resumo-item">
+                    <span class="resumo-item__label">Status</span>
+                    <span class="resumo-item__valor">{{ inspecaoSelecionada.status || '—' }}</span>
+                  </div>
+                  <div class="resumo-item">
+                    <span class="resumo-item__label">Atualizado</span>
+                    <span class="resumo-item__valor">{{ formatDate(inspecaoSelecionada.updatedAt) }}</span>
+                  </div>
+                </div>
+
+                <template v-if="inspecaoSelecionada.observacoesGerais">
+                  <div class="resumo-divisor"></div>
+                  <div class="resumo-obs">
+                    <div class="resumo-item__label">Observações</div>
+                    <p>{{ inspecaoSelecionada.observacoesGerais }}</p>
+                  </div>
+                </template>
+              </div>
+
+              <div class="inspetor-card">
+                <div class="inspetor-avatar" :class="avatarClass(inspecaoSelecionada.funcionarioId)">
+                  {{ ownerInitials(inspecaoSelecionada) }}
+                </div>
+                <div class="inspetor-info">
+                  <span class="inspetor-nome">{{ inspecaoSelecionada.funcionarioNome || inspecaoSelecionada.autorCadastro || user?.name || 'Inspetor' }}</span>
+                  <span class="inspetor-label">Responsável pela inspeção</span>
+                </div>
+              </div>
+
+              <div class="modal-acoes">
+              <template v-if="confirmandoExclusao">
+                <p class="confirm-aviso">Excluir esta inspeção permanentemente?</p>
+                <div class="confirm-botoes">
+                  <button class="btn-acao btn-acao--cancelar" @click="confirmandoExclusao = false">Cancelar</button>
+                  <button class="btn-acao btn-acao--confirmar" @click="excluirInspecao(inspecaoSelecionada.localId)">Sim, excluir</button>
+                </div>
+              </template>
+
+              <template v-else-if="isDraft(inspecaoSelecionada)">
+                <button class="btn-acao btn-acao--editar" @click="editarInspecao(inspecaoSelecionada)">
+                  Continuar editando
+                </button>
+                <button class="btn-acao btn-acao--excluir" @click="confirmandoExclusao = true">
+                  Excluir
+                </button>
+              </template>
+
+              <template v-else>
+                <button
+                  class="btn-acao btn-acao--sincronizar"
+                  :disabled="inspecaoSelecionada.syncStatus === 'sincronizando'"
+                  @click="enviarOuSincronizar(inspecaoSelecionada)"
+                >
+                  {{ inspecaoSelecionada.syncStatus === 'sincronizando' ? 'Sincronizando...' : 'Enviar/Sincronizar' }}
+                </button>
+                <button class="btn-acao btn-acao--editar" @click="editarInspecao(inspecaoSelecionada)">
+                  Editar Formulário
+                </button>
+                <button class="btn-acao btn-acao--excluir" @click="confirmandoExclusao = true">
+                  Excluir Formulário
+                </button>
+              </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div><!-- /dashboard -->
 
 </template>
@@ -250,6 +366,10 @@ const notifOpen = ref(false)
 const profileOpen = ref(false)
 const notifMenuRef = ref(null)
 const profileMenuRef = ref(null)
+const inspecaoSelecionada = ref(null)
+const confirmandoExclusao = ref(false)
+const AVATAR_CLASSES = ['av-red', 'av-blue', 'av-green', 'av-purple']
+const avatarMap = new Map()
 
 const user    = computed(() => auth.currentUser?.value ?? auth.currentUser)
 const initials = computed(() => {
@@ -332,7 +452,38 @@ function logoutUser() {
 }
 
 function abrirInspecao(inspecao) {
+  inspecaoSelecionada.value = inspecao
+  confirmandoExclusao.value = false
+}
+
+function fecharResumo() {
+  inspecaoSelecionada.value = null
+  confirmandoExclusao.value = false
+}
+
+function isDraft(inspecao) {
+  return inspecao?.syncStatus === 'rascunho'
+}
+
+function editarInspecao(inspecao) {
+  fecharResumo()
   router.push({ path: '/formulario', query: { localId: inspecao.localId } })
+}
+
+async function enviarOuSincronizar(inspecao) {
+  if (!inspecao || inspecao.syncStatus === 'sincronizando') return
+
+  await store.enfileirarParaSync(inspecao)
+  if (store.apiDisponivel) {
+    await store.carregarDoServidor()
+  }
+
+  fecharResumo()
+}
+
+async function excluirInspecao(localId) {
+  await store.excluir(localId)
+  fecharResumo()
 }
 
 function novaInspecao() {
@@ -371,9 +522,9 @@ function formatDate(ts) {
 
 function getSyncHint(syncStatus) {
   if (syncStatus === 'rascunho') return 'Rascunho salvo localmente.'
-  if (syncStatus === 'pendente_sync') return 'Aguardando sincronizacao automatica.'
-  if (syncStatus === 'sincronizando') return 'Sincronizacao em andamento.'
-  if (syncStatus === 'erro_sync') return 'Falha no ultimo envio. Toque em Tentar novamente.'
+  if (syncStatus === 'pendente_sync') return 'Aguardando sincronização automática.'
+  if (syncStatus === 'sincronizando') return 'Sincronização em andamento.'
+  if (syncStatus === 'erro_sync') return 'Falha no último envio. Toque em Tentar novamente.'
   return ''
 }
 
@@ -387,6 +538,15 @@ function ownerInitials(inspecao) {
   const primeira = partes[0]?.[0] ?? ''
   const segunda = partes.length > 1 ? (partes[partes.length - 1]?.[0] ?? '') : (partes[0]?.[1] ?? '')
   return `${primeira}${segunda}`.toUpperCase() || '??'
+}
+
+function avatarClass(id) {
+  const key = String(id || 'desconhecido')
+  if (!avatarMap.has(key)) {
+    avatarMap.set(key, AVATAR_CLASSES[avatarMap.size % AVATAR_CLASSES.length])
+  }
+
+  return avatarMap.get(key)
 }
 </script>
 
@@ -962,4 +1122,196 @@ function ownerInitials(inspecao) {
 }
 .lista-vazia svg { width: 64px; height: 64px; fill: var(--cptm-cinza-borda); margin: 0 auto var(--s-md); }
 .lista-vazia p   { font-size: var(--txt-sm); }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 200;
+  display: flex; align-items: flex-end;
+  backdrop-filter: blur(2px);
+}
+
+.modal-sheet {
+  background: var(--cptm-branco);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
+  padding-bottom: var(--safe-bottom);
+}
+
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--cptm-cinza-borda);
+  border-radius: 99px;
+  margin: 12px auto 0;
+}
+
+.modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: var(--s-md) var(--s-md) var(--s-sm);
+  border-bottom: 1px solid var(--cptm-cinza-borda);
+}
+
+.modal-head__title { font-size: var(--txt-base); font-weight: 800; color: var(--cptm-cinza-escuro); margin-bottom: 4px; }
+.modal-head__sub { display: flex; align-items: center; gap: var(--s-sm); font-size: var(--txt-xs); color: var(--cptm-cinza-claro); }
+
+.func-pill {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 800; color: white;
+}
+
+.btn-fechar {
+  background: var(--cptm-cinza-fundo);
+  border: none; border-radius: 50%;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--cptm-cinza-medio);
+  flex-shrink: 0;
+}
+
+.modal-body { padding: var(--s-md); display: flex; flex-direction: column; gap: var(--s-md); }
+
+.resumo-card {
+  background: var(--cptm-branco);
+  border: 1.5px solid var(--cptm-cinza-borda);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.resumo-linha--destaque {
+  display: flex; align-items: center; gap: var(--s-md);
+  padding: var(--s-md);
+  background: var(--cptm-cinza-fundo);
+}
+
+.resumo-icone {
+  width: 44px; height: 44px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.resumo-divisor { height: 1px; background: var(--cptm-cinza-borda); }
+.resumo-grupo { padding: var(--s-md); display: flex; flex-direction: column; gap: var(--s-sm); }
+.resumo-item { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-sm); }
+
+.resumo-item__label {
+  font-size: var(--txt-xs); color: var(--cptm-cinza-claro);
+  font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  flex-shrink: 0;
+}
+
+.resumo-item__valor {
+  font-size: var(--txt-sm); font-weight: 600;
+  color: var(--cptm-cinza-escuro); text-align: right;
+}
+
+.resumo-obs { padding: var(--s-md); }
+.resumo-obs p { font-size: var(--txt-sm); color: var(--cptm-cinza-escuro); margin: 4px 0 0; line-height: 1.5; }
+
+.inspetor-card {
+  display: flex; align-items: center; gap: var(--s-md);
+  background: var(--cptm-cinza-fundo);
+  border: 1.5px solid var(--cptm-cinza-borda);
+  border-radius: var(--r-lg);
+  padding: var(--s-md);
+}
+
+.inspetor-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .8rem; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+
+.inspetor-info { display: flex; flex-direction: column; gap: 2px; }
+.inspetor-nome { font-size: var(--txt-sm); font-weight: 700; color: var(--cptm-cinza-escuro); }
+.inspetor-label { font-size: var(--txt-xs); color: var(--cptm-cinza-claro); }
+
+.modal-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-sm);
+  padding: var(--s-md);
+  border-top: 1px solid var(--cptm-cinza-borda);
+}
+
+.btn-acao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--r-md);
+  padding: 14px var(--s-md);
+  font-size: var(--txt-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-acao:active { opacity: 0.8; transform: scale(0.98); }
+
+.btn-acao:disabled { opacity: .55; }
+
+.btn-acao--sincronizar {
+  background: var(--cptm-vermelho);
+  color: white;
+}
+
+.btn-acao--editar {
+  background: var(--cptm-vermelho);
+  color: white;
+}
+
+.btn-acao--excluir {
+  background: var(--cptm-cinza-fundo);
+  color: #C62828;
+  border: 1.5px solid #FFCDD2;
+}
+
+.confirm-aviso {
+  font-size: var(--txt-sm);
+  font-weight: 700;
+  color: #C62828;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.confirm-botoes {
+  display: flex;
+  gap: var(--s-sm);
+}
+
+.btn-acao--cancelar {
+  flex: 1;
+  background: var(--cptm-cinza-fundo);
+  color: var(--cptm-cinza-medio);
+  border: 1.5px solid var(--cptm-cinza-borda);
+}
+
+.btn-acao--confirmar {
+  flex: 1;
+  background: #C62828;
+  color: white;
+}
+
+.av-red    { background: linear-gradient(135deg, #C8102E, #E8394F); }
+.av-blue   { background: linear-gradient(135deg, #1565C0, #1976D2); }
+.av-green  { background: linear-gradient(135deg, #2E7D32, #43A047); }
+.av-purple { background: linear-gradient(135deg, #4527A0, #673AB7); }
+
+.slide-up-enter-active { transition: all 0.35s cubic-bezier(0.34, 1.15, 0.64, 1); }
+.slide-up-leave-active { transition: all 0.25s ease; }
+.slide-up-enter-from  { opacity: 0; }
+.slide-up-leave-to    { opacity: 0; }
+.slide-up-enter-from .modal-sheet { transform: translateY(100%); }
+.slide-up-leave-to   .modal-sheet { transform: translateY(100%); }
+.modal-sheet { transition: transform 0.35s cubic-bezier(0.34, 1.15, 0.64, 1); }
 </style>
