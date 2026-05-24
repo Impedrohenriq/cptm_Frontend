@@ -146,10 +146,9 @@ const progressPct = computed(() => (etapaAtual.value / (totalEtapas - 1)) * 100)
 
 const etapaValida = computed(() => {
   switch (etapaAtual.value) {
-    case 0: return !!(dados.nomeContratada && dados.localEscopo && dados.siglaArea && dados.autorCadastro && dados.responsavelTecnico)
-    case 1: return !!(dados.naturezaPGA && dados.dataEmissao && dados.numFormulario && dados.autorFormulario && dados.dataCadastramento && dados.horaCadastramento)
-    case 2: return !!(dados.emNumero && dados.emNome && dados.municipio && dados.linha)
-    case 3: return !!(dados.tipoAtividadeListada && dados.origemEfluente && dados.fonteGeradora)
+    case 0: return !!(dados.nomeContratada && dados.autorCadastro && dados.responsavelTecnico)
+    case 1: return !!(dados.dataEmissao && dados.numFormulario)
+    case 2: return !!dados.emNumero
     default: return true
   }
 })

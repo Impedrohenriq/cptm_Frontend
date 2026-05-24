@@ -5,6 +5,7 @@ import { autenticarUsuario, registrarUsuario } from '@/services/api'
 const AUTH_KEY = 'cptm_auth_ok'
 const USER_KEY = 'cptm_user'
 const ONBOARDING_KEY = 'cptm_onboarding_done'
+const TOKEN_KEY = 'cptm_auth_token'
 
 function isUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
@@ -53,13 +54,15 @@ function readStoredUser() {
 
 export const useAuthStore = defineStore('auth', () => {
   const storedUser = readStoredUser()
-  const authenticated = ref(localStorage.getItem(AUTH_KEY) === 'true' && !!storedUser)
+  const hasToken = !!localStorage.getItem(TOKEN_KEY)
+  const authenticated = ref(localStorage.getItem(AUTH_KEY) === 'true' && !!storedUser && hasToken)
   const user = ref(storedUser)
   const onboardingDone = ref(localStorage.getItem(ONBOARDING_KEY) === 'true')
 
-  if (!storedUser) {
+  if (!storedUser || !hasToken) {
     localStorage.setItem(AUTH_KEY, 'false')
     localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(TOKEN_KEY)
   }
 
   const isAuthenticated = computed(() => authenticated.value)
@@ -67,11 +70,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isGestor = computed(() => user.value?.isGestor === true)
   const needsOnboarding = computed(() => !onboardingDone.value && !isGestor.value)
 
-  function persistAuth(safeUser) {
+  function persistAuth(safeUser, token) {
     authenticated.value = true
     user.value = safeUser
     localStorage.setItem(AUTH_KEY, 'true')
     localStorage.setItem(USER_KEY, JSON.stringify(safeUser))
+
+    if (token && typeof token === 'string') {
+      localStorage.setItem(TOKEN_KEY, token)
+    }
   }
 
   function mapUser(apiUser) {
@@ -104,7 +111,11 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, error: response?.error || 'Usuario ou senha invalida.' }
       }
 
-      persistAuth(mapUser(response.user))
+      if (!response?.token) {
+        return { success: false, error: 'Sessao invalida: token nao recebido.' }
+      }
+
+      persistAuth(mapUser(response.user), response.token)
       return { success: true }
     } catch (error) {
       return { success: false, error: error?.body?.error || error?.body?.Error || error?.message || 'Falha ao autenticar.' }
@@ -128,7 +139,11 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: false, error: response?.error || 'Nao foi possivel criar o usuario.' }
       }
 
-      persistAuth(mapUser(response.user))
+      if (!response?.token) {
+        return { success: false, error: 'Sessao invalida: token nao recebido.' }
+      }
+
+      persistAuth(mapUser(response.user), response.token)
       return { success: true }
     } catch (error) {
       return { success: false, error: error?.body?.error || error?.body?.Error || error?.message || 'Falha ao criar cadastro.' }
@@ -140,6 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
     localStorage.setItem(AUTH_KEY, 'false')
     localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(TOKEN_KEY)
   }
 
   function completeOnboarding() {

@@ -1,12 +1,24 @@
 import { blobToBase64 } from '@/services/offlineMedia.js'
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000'
+const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:5001'
 const ENDPOINT = `${BASE}/api/formularios-efluente`
 const HEALTH_ENDPOINT = `${BASE}/health`
 const AUTH_ENDPOINT = `${BASE}/api/auth`
+const TOKEN_KEY = 'cptm_auth_token'
 
-function headers() {
-  return { 'Content-Type': 'application/json' }
+function getAuthToken() {
+  return localStorage.getItem(TOKEN_KEY) || ''
+}
+
+function headers({ auth = true } = {}) {
+  const base = { 'Content-Type': 'application/json' }
+
+  if (!auth) {
+    return base
+  }
+
+  const token = getAuthToken()
+  return token ? { ...base, Authorization: `Bearer ${token}` } : base
 }
 
 function buildApiError({ status, message, body, isNetworkError = false }) {
@@ -354,7 +366,7 @@ export async function healthCheck() {
 
 export async function listar(pagina = 1, tamanho = 50) {
   const data = await fetchJson(`${ENDPOINT}?pagina=${pagina}&tamanho=${tamanho}`, {
-    headers: headers(),
+    headers: headers({ auth: true }),
   })
 
   return (data.itens ?? data.Itens ?? []).map(doDto)
@@ -362,7 +374,7 @@ export async function listar(pagina = 1, tamanho = 50) {
 
 export async function buscarPorChave(chavePrimariaMa) {
   const data = await fetchJson(`${ENDPOINT}/${encodeURIComponent(chavePrimariaMa)}`, {
-    headers: headers(),
+    headers: headers({ auth: true }),
   })
 
   return doDto(data)
@@ -372,7 +384,7 @@ export async function criar(inspecao) {
   const dto = await paraDto(inspecao)
   const data = await fetchJson(ENDPOINT, {
     method: 'POST',
-    headers: headers(),
+    headers: headers({ auth: true }),
     body: JSON.stringify(dto),
   })
 
@@ -383,7 +395,7 @@ export async function atualizar(inspecao) {
   const dto = await paraDto(inspecao)
   await fetchJson(`${ENDPOINT}/${encodeURIComponent(dto.chavePrimariaMa)}`, {
     method: 'PUT',
-    headers: headers(),
+    headers: headers({ auth: true }),
     body: JSON.stringify(dto),
   })
 }
@@ -391,14 +403,14 @@ export async function atualizar(inspecao) {
 export async function excluir(chavePrimariaMa) {
   await fetchJson(`${ENDPOINT}/${encodeURIComponent(chavePrimariaMa)}`, {
     method: 'DELETE',
-    headers: headers(),
+    headers: headers({ auth: true }),
   })
 }
 
 export async function registrarUsuario({ fullName, email, password, confirmPassword }) {
   return fetchJson(`${AUTH_ENDPOINT}/register`, {
     method: 'POST',
-    headers: headers(),
+    headers: headers({ auth: false }),
     body: JSON.stringify({
       fullName,
       email,
@@ -411,7 +423,7 @@ export async function registrarUsuario({ fullName, email, password, confirmPassw
 export async function autenticarUsuario({ email, password }) {
   return fetchJson(`${AUTH_ENDPOINT}/login`, {
     method: 'POST',
-    headers: headers(),
+    headers: headers({ auth: false }),
     body: JSON.stringify({
       email,
       password,
