@@ -1,6 +1,7 @@
 const MAX_IMAGE_WIDTH = 1600
 const MAX_IMAGE_HEIGHT = 1200
 const JPEG_QUALITY = 0.82
+const MAX_UPLOAD_IMAGE_BYTES = 4.8 * 1024 * 1024
 
 function loadImage(file) {
   return new Promise((resolve, reject) => {
@@ -25,16 +26,16 @@ async function optimizeImageBlob(file) {
     return file
   }
 
+  if (file.type === 'image/jpeg' && file.size <= MAX_UPLOAD_IMAGE_BYTES && file.size <= 1024 * 1024) {
+    return file
+  }
+
   const image = await loadImage(file)
   const scale = Math.min(
     1,
     MAX_IMAGE_WIDTH / image.width,
     MAX_IMAGE_HEIGHT / image.height,
   )
-
-  if (!shouldResize(image.width, image.height) && file.size <= 1024 * 1024) {
-    return file
-  }
 
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(1, Math.round(image.width * scale))
@@ -45,19 +46,36 @@ async function optimizeImageBlob(file) {
     return file
   }
 
-  context.drawImage(image, 0, 0, canvas.width, canvas.height)
+  let currentWidth = canvas.width
+  let currentHeight = canvas.height
+  let bestBlob = null
 
-  const preferredType = file.type === 'image/png' ? 'image/png' : 'image/jpeg'
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    canvas.width = currentWidth
+    canvas.height = currentHeight
+    context.clearRect(0, 0, currentWidth, currentHeight)
+    context.drawImage(image, 0, 0, currentWidth, currentHeight)
 
-  const blob = await new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (result) => result ? resolve(result) : reject(new Error('Nao foi possivel comprimir a imagem.')),
-      preferredType,
-      JPEG_QUALITY,
-    )
-  })
+    const quality = Math.max(0.58, JPEG_QUALITY - (attempt * 0.1))
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (result) => result ? resolve(result) : reject(new Error('Nao foi possivel comprimir a imagem.')),
+        'image/jpeg',
+        quality,
+      )
+    })
 
-  return blob
+    bestBlob = blob
+
+    if (blob.size <= MAX_UPLOAD_IMAGE_BYTES) {
+      return blob
+    }
+
+    currentWidth = Math.max(1, Math.round(currentWidth * 0.85))
+    currentHeight = Math.max(1, Math.round(currentHeight * 0.85))
+  }
+
+  return bestBlob ?? file
 }
 
 export async function fileToOfflinePhoto(file, index) {

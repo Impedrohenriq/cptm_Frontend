@@ -59,6 +59,10 @@ export function toSyncErrorMessage(error) {
   if (error.isNetworkError) return 'Sem conexão com a API. O item permaneceu na fila local.'
   if (error.status === 401) return 'Sessão expirada. Faça login novamente para sincronizar.'
   if (error.status === 400) {
+    if (typeof error.body === 'string' && error.body.trim()) {
+      return error.body.trim()
+    }
+
     const errors = error.body?.errors && typeof error.body.errors === 'object'
       ? Object.entries(error.body.errors)
       : []

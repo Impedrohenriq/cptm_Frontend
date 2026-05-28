@@ -95,7 +95,22 @@ function normalizePhotoMime(photo) {
   return photo.type || photo.blob?.type || 'image/jpeg'
 }
 
+function normalizeFotoBase64(value) {
+  if (typeof value !== 'string') return null
+
+  let normalized = value.trim()
+  const commaIndex = normalized.indexOf(',')
+  if (normalized.toLowerCase().startsWith('data:') && commaIndex >= 0) {
+    normalized = normalized.slice(commaIndex + 1)
+  }
+
+  normalized = normalized.replace(/[\r\n\s\t]/g, '')
+  return normalized || null
+}
+
 async function serializeFoto(photo, index) {
+  if (!photo) return null
+
   const fotoBase64 = photo.blob
     ? await blobToBase64(photo.blob)
     : photo.base64 ?? photo.fotoBase64 ?? null
@@ -103,7 +118,7 @@ async function serializeFoto(photo, index) {
   return {
     idFoto: photo.idFoto ?? null,
     nrFoto: photo.nrFoto ?? index + 1,
-    fotoBase64,
+    fotoBase64: normalizeFotoBase64(fotoBase64),
     dsOrientacao: photo.orientacao ?? photo.dsOrientacao ?? 'Paisagem/Horizontal',
     mimeType: normalizePhotoMime(photo),
   }
@@ -245,7 +260,8 @@ export async function paraDto(inspecao) {
     cdElementoMonitorCnc: asNullableString(inspecao.codigoElementoMonitorCnc),
     cdUltimoRra: asNullableString(inspecao.codigoUltimoRra),
     cdCedoc: asNullableString(inspecao.codigoCedoc),
-    fotos: await Promise.all((inspecao.fotos ?? []).map((foto, index) => serializeFoto(foto, index))),
+    fotos: (await Promise.all((inspecao.fotos ?? []).map((foto, index) => serializeFoto(foto, index))))
+      .filter(Boolean),
   }
 }
 
